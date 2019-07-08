@@ -1,0 +1,62 @@
+plugins {
+	id 'org.springframework.boot' version '2.1.6.RELEASE'
+	id 'java'
+	id 'war'
+	id 'maven-publish'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'edu.byu.emergency'
+//version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
+sourceCompatibility = '1.8'
+
+/* Note: bootWar task still uses archiveName as of Spring Boot 2.1.6.RELEASE, not the newer archiveFileName. */
+bootWar {
+	archiveName 'emergency-alert-api.war'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+}
+
+publishToMavenLocal.dependsOn assemble
+
+publishing {
+
+	publications {
+		war(MavenPublication) {
+//			artifact file("$buildDir/libs/${project.name}-${project.version}.jar")
+			artifact file("$buildDir/libs/emergency-alert-api.war")
+		}
+	}
+
+	repositories {
+		mavenLocal()
+		maven {
+			name = "byu"
+
+			def releaseRepoUrl   = "https://developer.byu.edu/maven2/content/repositories/byu-release-repo"
+			def releaseRepoUser  = "$byuMavenReleaseUser"
+			def releaseRepoPass  = "$byuMavenReleasePass"
+
+			def snapshotRepoUrl  = "https://developer.byu.edu/maven2/content/repositories/byu-snapshot-repo"
+			def snapshotRepoUser = "$byuMavenSnapshotUser"
+			def snapshotRepoPass = "$byuMavenSnapshotPass"
+
+			url = project.version.endsWith('SNAPSHOT') ? snapshotRepoUrl : releaseRepoUrl
+			credentials {
+				username = project.version.endsWith('SNAPSHOT') ? snapshotRepoUser : releaseRepoUser
+				password = project.version.endsWith('SNAPSHOT') ? snapshotRepoPass : releaseRepoPass
+			}
+		}
+	}
+}

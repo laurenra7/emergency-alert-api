@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+    <contextName>emergency-alert-api</contextName>
+
+    <!--
+     | Propagate log levels to java.util.logging
+     +-->
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <!--
+     | Expose the logback configuration via JMX
+     +-->
+    <jmxConfigurator />
+
+    <!--
+     | Specify a local property that sets up the logging directory
+     +-->
+    <property scope="local" name="LOG_DIR" value="${catalina.base}/logs" />
+
+    <!--
+     | Setup a file based logger that rolls
+     |
+     | http://logback.qos.ch/manual/appenders.html#RollingFileAppender
+     +-->
+    <appender name="LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--
+         | Name of the current log file
+         +-->
+        <File>${LOG_DIR}/${CONTEXT_NAME}.log</File>
+
+        <!--
+         | Log message pattern configuration
+         |
+         | http://logback.qos.ch/manual/layouts.html#conversionWord
+         +-->
+        <encoder>
+            <pattern>%-5level [%thread] %logger{36} %d{ISO8601} - %msg%n</pattern>
+        </encoder>
+
+        <!--
+         | Rolls the log file every 24 hours
+         | gzip the archived log file
+         | Delete archived log files older than 28 days
+         |
+         | http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy
+         +-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${CONTEXT_NAME}.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>28</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>notification-portlet.log: %-5level [%date{mm:ss.SSS}] %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--
+     | Setup default log level to the build-defined value
+     +-->
+    <root level="INFO">
+        <appender-ref ref="LOG" />
+    </root>
+
+    <!--
+     | Turn up logging for portlet specific package
+     +-->
+    <logger name="edu.byu.emergency.config" additivity="false" level="DEBUG">
+        <appender-ref ref="LOG" />
+    </logger>
+    <logger name="edu.byu.emergency.controller" additivity="false" level="DEBUG">
+        <appender-ref ref="LOG" />
+    </logger>
+</configuration>
+
